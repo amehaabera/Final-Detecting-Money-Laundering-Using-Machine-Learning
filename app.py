@@ -6,6 +6,7 @@ pip install --upgrade pip
 pip install streamlit
 pip install xgboost
 streamlit run your_script_name.py
+pip uninstall -r requirements.txt -y
 
 # Load the model
 try:
