@@ -3,7 +3,14 @@ import pickle
 import pandas as pd
 
 # Load the model
-model = pickle.load(open('xgb_model.pkl', 'rb'))
+try:
+    model = pickle.load(open('xgb_model.pkl', 'rb'))
+except FileNotFoundError:
+    st.error("Model file not found. Make sure 'xgb_model.pkl' is in the correct directory.")
+    st.stop()
+except Exception as e:
+    st.error(f"Error loading model: {e}")
+    st.stop()
 
 # Define function to preprocess user input
 def preprocess_input(payment, amount, oldbalanceOrg, newbalanceOrg, oldbalanceDest, newbalanceDest):
@@ -16,12 +23,16 @@ def preprocess_input(payment, amount, oldbalanceOrg, newbalanceOrg, oldbalanceDe
         'oldbalanceDest': [oldbalanceDest], 
         'newbalanceDest': [newbalanceDest]
     })
-    
+
     # Convert 'type' to categorical if needed
-    # If the model expects encoded types, do the encoding here
-    # For instance, if 'type' needs to be encoded as integers:
-    input_df['type'] = input_df['type'].map({'CASH_IN': 0, 'CASH_OUT': 1, 'DEBIT': 2, 'PAYMENT': 3, 'TRANSFER': 4})
-    
+    # Adjust this part based on your model’s requirements
+    type_mapping = {'CASH_IN': 0, 'CASH_OUT': 1, 'DEBIT': 2, 'PAYMENT': 3, 'TRANSFER': 4}
+    if payment in type_mapping:
+        input_df['type'] = type_mapping[payment]
+    else:
+        st.error(f"Invalid transaction type: {payment}")
+        st.stop()
+
     return input_df
 
 # Define Streamlit app
@@ -50,10 +61,18 @@ def app():
     newbalanceDest = st.number_input('New Balance (Destination)', min_value=0.0, format="%.2f")
 
     # Preprocess user input
-    input_data = preprocess_input(payment, amount, oldbalanceOrg, newbalanceOrg, oldbalanceDest, newbalanceDest)
+    try:
+        input_data = preprocess_input(payment, amount, oldbalanceOrg, newbalanceOrg, oldbalanceDest, newbalanceDest)
+    except Exception as e:
+        st.error(f"Error preprocessing input: {e}")
+        st.stop()
     
     # Make prediction
-    prediction = model.predict(input_data)
+    try:
+        prediction = model.predict(input_data)
+    except Exception as e:
+        st.error(f"Error making prediction: {e}")
+        st.stop()
     
     # Display result
     if prediction[0] == 1:
