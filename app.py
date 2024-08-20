@@ -2,69 +2,66 @@ import streamlit as st
 import pickle
 import pandas as pd
 
-# load the model and label encoder
+# Load the model
 model = pickle.load(open('xgb_model.pkl', 'rb'))
 
-# define function to preprocess user input
+# Define function to preprocess user input
 def preprocess_input(payment, amount, oldbalanceOrg, newbalanceOrg, oldbalanceDest, newbalanceDest):
-    # create dataframe with user input
-    input_df = pd.DataFrame({'type': [payment], 
-                             'amount': [amount], 
-                             'oldbalanceOrg': [oldbalanceOrg], 
-                             'newbalanceOrg': [newbalanceOrg], 
-                             'oldbalanceDest': [oldbalanceDest], 
-                             'newbalanceDest': [newbalanceDest]})
-  
-    # return preprocessed input
+    # Create dataframe with user input
+    input_df = pd.DataFrame({
+        'type': [payment], 
+        'amount': [amount], 
+        'oldbalanceOrg': [oldbalanceOrg], 
+        'newbalanceOrg': [newbalanceOrg], 
+        'oldbalanceDest': [oldbalanceDest], 
+        'newbalanceDest': [newbalanceDest]
+    })
+    
+    # Convert 'type' to categorical if needed
+    # If the model expects encoded types, do the encoding here
+    # For instance, if 'type' needs to be encoded as integers:
+    input_df['type'] = input_df['type'].map({'CASH_IN': 0, 'CASH_OUT': 1, 'DEBIT': 2, 'PAYMENT': 3, 'TRANSFER': 4})
+    
     return input_df
 
-# define Streamlit app
+# Define Streamlit app
 def app():
-    # set app title
+    # Set app title
     st.title('Money Laundering Detector')
     
-    # add sidebar to select transaction type
-    types = st.sidebar.subheader("""
-                 Enter Type of Transfer Made:\n\n\n\n
-                 0 for 'CASH_IN' Transaction\n 
-                 1 for 'CaASH_OUT' Transaction\n 
-                 2 for 'DEBIT' Transaction\n
-                 3 for 'PAYMENT' Transaction\n  
-                 4 for 'TRANSFER' Transaction\n""")
-    types = st.sidebar.selectbox("",(0,1,2,3,4))
-    x = ''
-    if types == 0:
-        x = 'CASH_IN'
-    if types == 1:
-        x = 'CASH_OUT'
-    if types == 2:
-        x = 'DEBIT'
-    if types == 3:
-        x = 'PAYMENT'
-    if types == 4:
-        x =  'TRANSFER'
+    # Add sidebar to select transaction type
+    transaction_types = {
+        0: 'CASH_IN', 
+        1: 'CASH_OUT', 
+        2: 'DEBIT', 
+        3: 'PAYMENT', 
+        4: 'TRANSFER'
+    }
+    
+    st.sidebar.subheader("Enter Type of Transfer Made:")
+    type_id = st.sidebar.selectbox("", list(transaction_types.keys()))
+    payment = transaction_types[type_id]
 
-    # define input fields
-    payment = x
-    amount = st.number_input('Amount')
-    oldbalanceOrg = st.number_input('Old Balance (Origin)')
-    newbalanceOrg = st.number_input('New Balance (Origin)')
-    oldbalanceDest = st.number_input('Old Balance (Destination)')
-    newbalanceDest = st.number_input('New Balance (Destination)')
+    # Define input fields
+    amount = st.number_input('Amount', min_value=0.0, format="%.2f")
+    oldbalanceOrg = st.number_input('Old Balance (Origin)', min_value=0.0, format="%.2f")
+    newbalanceOrg = st.number_input('New Balance (Origin)', min_value=0.0, format="%.2f")
+    oldbalanceDest = st.number_input('Old Balance (Destination)', min_value=0.0, format="%.2f")
+    newbalanceDest = st.number_input('New Balance (Destination)', min_value=0.0, format="%.2f")
 
-    # preprocess user input
+    # Preprocess user input
     input_data = preprocess_input(payment, amount, oldbalanceOrg, newbalanceOrg, oldbalanceDest, newbalanceDest)
     
-    # make prediction
+    # Make prediction
     prediction = model.predict(input_data)
     
-    # display result
-    if prediction[0] == 0:
+    # Display result
+    if prediction[0] == 1:
         st.write('The Person is Fraud')
     else:
-        st.write('The Person Not Fraud')
+        st.write('The Person is Not Fraud')
 
-    # display input data
+    # Display input data
     st.write('Input Data:')
     st.write(input_data)
 
