@@ -1,6 +1,11 @@
 import streamlit as st
 import pickle
 import pandas as pd
+pip install --upgrade pip setuptools wheel
+pip install --upgrade pip
+pip install streamlit
+pip install xgboost
+streamlit run your_script_name.py
 
 # Load the model
 try:
