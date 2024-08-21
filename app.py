@@ -1,94 +1,70 @@
-pip3 install streamlit
-pip install --upgrade pip setuptools wheel
-pip install --upgrade pip
-pip install streamlit
-pip install xgboost
-streamlit run your_script_name.py
-pip install setuptools
 import streamlit as st
 import pickle
 import pandas as pd
 
+# load the model and label encoder
+model = pickle.load(open('xgb_model.pkl', 'rb'))
 
-# Load the model
-try:
-    model = pickle.load(open('xgb_model.pkl', 'rb'))
-except FileNotFoundError:
-    st.error("Model file not found. Make sure 'xgb_model.pkl' is in the correct directory.")
-    st.stop()
-except Exception as e:
-    st.error(f"Error loading model: {e}")
-    st.stop()
-
-# Define function to preprocess user input
+# define function to preprocess user input
 def preprocess_input(payment, amount, oldbalanceOrg, newbalanceOrg, oldbalanceDest, newbalanceDest):
-    # Create dataframe with user input
-    input_df = pd.DataFrame({
-        'type': [payment], 
-        'amount': [amount], 
-        'oldbalanceOrg': [oldbalanceOrg], 
-        'newbalanceOrg': [newbalanceOrg], 
-        'oldbalanceDest': [oldbalanceDest], 
-        'newbalanceDest': [newbalanceDest]
-    })
-
-    # Convert 'type' to categorical if needed
-    # Adjust this part based on your model’s requirements
-    type_mapping = {'CASH_IN': 0, 'CASH_OUT': 1, 'DEBIT': 2, 'PAYMENT': 3, 'TRANSFER': 4}
-    if payment in type_mapping:
-        input_df['type'] = type_mapping[payment]
-    else:
-        st.error(f"Invalid transaction type: {payment}")
-        st.stop()
-
+    # create dataframe with user input
+    input_df = pd.DataFrame({'type': [payment], 
+                             'amount': [amount], 
+                             'oldbalanceOrg': [oldbalanceOrg], 
+                             'newbalanceOrg': [newbalanceOrg], 
+                             'oldbalanceDest': [oldbalanceDest], 
+                             'newbalanceDest': [newbalanceDest]})
+  
+    # return preprocessed input
     return input_df
 
-# Define Streamlit app
+# define Streamlit app
 def app():
-    # Set app title
+    # set app title
     st.title('Money Laundering Detector')
     
-    # Add sidebar to select transaction type
-    transaction_types = {
-        0: 'CASH_IN', 
-        1: 'CASH_OUT', 
-        2: 'DEBIT', 
-        3: 'PAYMENT', 
-        4: 'TRANSFER'
-    }
-    
-    st.sidebar.subheader("Enter Type of Transfer Made:")
-    type_id = st.sidebar.selectbox("", list(transaction_types.keys()))
-    payment = transaction_types[type_id]
+    # add sidebar to select transaction type
+    types = st.sidebar.subheader("""
+                 Enter Type of Transfer Made:\n\n\n\n
+                 0 for 'CASH_IN' Transaction\n 
+                 1 for 'CaASH_OUT' Transaction\n 
+                 2 for 'DEBIT' Transaction\n
+                 3 for 'PAYMENT' Transaction\n  
+                 4 for 'TRANSFER' Transaction\n""")
+    types = st.sidebar.selectbox("",(0,1,2,3,4))
+    x = ''
+    if types == 0:
+        x = 'CASH_IN'
+    if types == 1:
+        x = 'CASH_OUT'
+    if types == 2:
+        x = 'DEBIT'
+    if types == 3:
+        x = 'PAYMENT'
+    if types == 4:
+        x =  'TRANSFER'
 
-    # Define input fields
-    amount = st.number_input('Amount', min_value=0.0, format="%.2f")
-    oldbalanceOrg = st.number_input('Old Balance (Origin)', min_value=0.0, format="%.2f")
-    newbalanceOrg = st.number_input('New Balance (Origin)', min_value=0.0, format="%.2f")
-    oldbalanceDest = st.number_input('Old Balance (Destination)', min_value=0.0, format="%.2f")
-    newbalanceDest = st.number_input('New Balance (Destination)', min_value=0.0, format="%.2f")
+    # define input fields
+    payment = x
+    amount = st.number_input('Amount')
+    oldbalanceOrg = st.number_input('Old Balance (Origin)')
+    newbalanceOrg = st.number_input('New Balance (Origin)')
+    oldbalanceDest = st.number_input('Old Balance (Destination)')
+    newbalanceDest = st.number_input('New Balance (Destination)')
 
-    # Preprocess user input
-    try:
-        input_data = preprocess_input(payment, amount, oldbalanceOrg, newbalanceOrg, oldbalanceDest, newbalanceDest)
-    except Exception as e:
-        st.error(f"Error preprocessing input: {e}")
-        st.stop()
+    # preprocess user input
+    input_data = preprocess_input(payment, amount, oldbalanceOrg, newbalanceOrg, oldbalanceDest, newbalanceDest)
     
-    # Make prediction
-    try:
-        prediction = model.predict(input_data)
-    except Exception as e:
-        st.error(f"Error making prediction: {e}")
-        st.stop()
+    # make prediction
+    prediction = model.predict(input_data)
     
-    # Display result
-    if prediction[0] == 1:
+    # display result
+    if prediction[0] == 0:
         st.write('The Person is Fraud')
     else:
-        st.write('The Person is Not Fraud')
+        st.write('The Person Not Fraud')
 
-    # Display input data
+    # display input data
     st.write('Input Data:')
     st.write(input_data)
 
