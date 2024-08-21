@@ -1,11 +1,11 @@
-pandas>=1.3.4
-streamlit>=1.5.1
-pickleshare>=0.7.5
+pandas==1.3.4 
+streamlit==1.5.1
+pickleshare==0.7.5
 protobuf~=3.19.0
-click>=8
-numpy>=1.22.0
+click==8
+numpy==1.21.0
 scikit-learn==1.1.1
-imbalanced-learn==0.8.1
-xgboost==1.7.5
+imblearn==0.8.1
+xgoost==1.7.5
 pip==23.0.1
 
