@@ -4,8 +4,8 @@ pickleshare>=0.7.5
 protobuf~=3.19.0
 click>=8.0.3
 numpy>=1.22.0
-setuptools==58.0.4
 scikit-learn==1.1.1
 imbalanced-learn==0.8.1
 xgboost==1.7.5
+pip==23.0.1
 
