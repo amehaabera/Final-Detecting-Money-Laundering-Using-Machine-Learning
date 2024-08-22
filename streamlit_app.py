@@ -9,7 +9,7 @@ def main():
     
     if option == 'About':
         html_temp = """
-        <div style = "background-color: yellow; padding: 10px;">
+        <div style = "background-color: blueblack; padding: 10px;">
             <center><h1>ABOUT OUR PROJECT</h1></center>
         </div><br>
         """
@@ -61,12 +61,11 @@ def main():
                 st.dataframe(df)
     
     elif option == 'Developers':
-        st.title("Meet the Developers")
+        st.title("Meet the Developer")
         st.write("Here are the brilliant minds behind this project:")
-        st.write("- Developer 1: Rumman Parvez")
-        st.write("- Developer 2: Kanishk Bajpai")
-        st.write("- Developer 3: Áryan Kushwah")
-        st.write("- Developer 3: Kaushal Singh Rana")
+        st.write("- Developer 1: Ameha Abera Kidane")
+        st.write("- Developer 2: Solomon Ayele - in Streamlit")
+        
         # Add more developers as needed
 
 if __name__ == '__main__':
